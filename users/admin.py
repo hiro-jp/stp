@@ -1,11 +1,14 @@
+from django.contrib import admin
 from django.contrib.auth.forms import (
     AdminPasswordChangeForm, UserChangeForm, UserCreationForm,
 )
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.admin import UserAdmin
 # Register your models here.
+from users.models import User
 
 
+@admin.register(User)
 class AdminUserAdmin(UserAdmin):
     add_form_template = 'admin/auth/user/add_form.html'
     change_user_password_template = None

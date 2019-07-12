@@ -8,6 +8,7 @@ from users.models import User
 
 
 class StpViewTest(TestCase):
+    # Index に Hello world!が表示される
     def test_index_view(self):
         url = reverse('index')
         response = self.client.get(url)

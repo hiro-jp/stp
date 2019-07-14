@@ -14,21 +14,29 @@ class StpLoginTest(TestCase):
             email="testuser@example.com",
             password="testuser_password",
         )
-        self.correspond_array = [
+        self.testuser = User.objects.get(username="testuser")
+        self.authenticated_correspondence = [
+            {'url': '/', 'template_name': 'stp/index_view.html'},
+        ]
+        self.not_authenticated_correspondence = [
             {'url': '/', 'template_name': 'accounts/login.html'},
         ]
 
-    # ログインしていないユーザにはlogin.htmlを表示する
-    def test_show_login_page_with_not_authenticated_user(self):
-        client = Client()
-        for c in self.correspond_array:
-            response = client.get(c["url"], follow=True)
+    # 対応
+    def test_templates_for_not_authenticated_user(self):
+        self.client.logout()
+        for c in self.not_authenticated_correspondence:
+            response = self.client.get(c["url"], follow=True)
             self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed(response, template_name=c["template_name"])
 
     # ログインしているユーザーにはインデックス画面を表示する
-    def test_show_index_page_with_authenticated_user(self):
-        pass
+    def test_templates_for_authenticated_user(self):
+        self.client.login(username=self.testuser.username, password=self.testuser.password)
+        for c in self.authenticated_correspondence:
+            response = self.client.get(c["url"], follow=True)
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, template_name=c["template_name"])
 
     # ログイン画面で正しいIDとパスワードを入力すると正しい内容のPOSTが飛ぶ
     def test_post_request_with_validatable_form(self):

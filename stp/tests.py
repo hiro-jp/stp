@@ -9,42 +9,57 @@ from users.models import User
 
 class StpLoginTest(TestCase):
     def setUp(self):
-        User.objects.create_user(
-            username="testuser",
-            email="testuser@example.com",
-            password="testuser_password",
+        self.testuser_username = "testuser_username"
+        self.testuser_password = "testuser_password"
+        self.testuser_email = "testuser@example.com"
+
+        self.testuser = User.objects.create_user(
+            username=self.testuser_username,
+            email=self.testuser_email,
         )
-        self.testuser = User.objects.get(username="testuser")
+        self.testuser.set_password(self.testuser_password)
+        self.testuser.save()
+
+        # ログインしていない場合のURLとtemplateの対応
+        self.not_authenticated_correspondence = [
+            {'url': '/', 'template_name': 'registration/login.html'},
+        ]
+        # ログインしている場合のURLとtemplateの対応
         self.authenticated_correspondence = [
             {'url': '/', 'template_name': 'stp/index_view.html'},
         ]
-        self.not_authenticated_correspondence = [
-            {'url': '/', 'template_name': 'accounts/login.html'},
-        ]
+        self.logged_in = self.client.login(
+            username=self.testuser_username,
+            password=self.testuser_password,
+        )
 
-    # 対応
+    def test_logged_in(self):
+        self.assertTrue(self.logged_in)
+
+    # ログインしていないユーザーにはURLに対応するtemplateを返す
     def test_templates_for_not_authenticated_user(self):
-        self.client.logout()
+        logged_in = self.client.logout()
+        # ログインしていないことを確認
+        self.assertFalse(logged_in)
+
+        # URLにあったtemplateを返すことを確認
         for c in self.not_authenticated_correspondence:
             response = self.client.get(c["url"], follow=True)
             self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed(response, template_name=c["template_name"])
 
-    # ログインしているユーザーにはインデックス画面を表示する
+    # ログインしているユーザーにURLに対応するtemplateを返す
     def test_templates_for_authenticated_user(self):
-        self.client.login(username=self.testuser.username, password=self.testuser.password)
+        # URLにあったtemplateを返すことを確認
         for c in self.authenticated_correspondence:
             response = self.client.get(c["url"], follow=True)
             self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed(response, template_name=c["template_name"])
 
-    # ログイン画面で正しいIDとパスワードを入力すると正しい内容のPOSTが飛ぶ
-    def test_post_request_with_validatable_form(self):
-        pass
+    # # ログイン画面で正しいIDとパスワードを入力すると正しい内容のPOSTが飛ぶ
+    # # ログイン画面で誤ったIDとパスワードを入力するとエラーメッセージが表示される
+    # # → Django側ですでにテストされているので不要
 
-    # ログイン画面で誤ったIDとパスワードを入力するとエラーメッセージが表示される
-    def test_show_error_message_with_not_validatable_form(self):
-        pass
 
 class StpViewTest(TestCase):
     pass

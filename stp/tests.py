@@ -1,18 +1,45 @@
 from numbers import Number
 
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
 
 from stp.models import BasketItem, Item, Order, Dealer, Packet, Campaign
 from users.models import User
 
 
+class StpLoginTest(TestCase):
+    def setUp(self):
+        User.objects.create_user(
+            username="testuser",
+            email="testuser@example.com",
+            password="testuser_password",
+        )
+        self.correspond_array = [
+            {'url': '/', 'template_name': 'accounts/login.html'},
+        ]
+
+    # ログインしていないユーザにはlogin.htmlを表示する
+    def test_show_login_page_with_not_authenticated_user(self):
+        client = Client()
+        for c in self.correspond_array:
+            response = client.get(c["url"], follow=True)
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, template_name=c["template_name"])
+
+    # ログインしているユーザーにはインデックス画面を表示する
+    def test_show_index_page_with_authenticated_user(self):
+        pass
+
+    # ログイン画面で正しいIDとパスワードを入力すると正しい内容のPOSTが飛ぶ
+    def test_post_request_with_validatable_form(self):
+        pass
+
+    # ログイン画面で誤ったIDとパスワードを入力するとエラーメッセージが表示される
+    def test_show_error_message_with_not_validatable_form(self):
+        pass
+
 class StpViewTest(TestCase):
-    # Index に Hello world!が表示される
-    def test_index_view(self):
-        url = reverse('index')
-        response = self.client.get(url)
-        self.assertContains(response, "Hello world!")
+    pass
 
 
 class StpModelTest(TestCase):
@@ -32,7 +59,7 @@ class StpModelTest(TestCase):
         orders = Order.objects.all()
         self.assertEqual(orders.count() - before_save_count, 1)
 
-    # Dealer に要素を一つ追加したら、カウントは１
+    # Dealer に要素を一つ追加したら、カウントは１増加
     def test_dealer_is_not_empty(self):
         before_save_count = Dealer.objects.all().count()
         dealer = Dealer()
@@ -40,7 +67,7 @@ class StpModelTest(TestCase):
         dealers = Dealer.objects.all()
         self.assertEqual(dealers.count() - before_save_count, 1)
 
-    # Item に要素を一つ追加したら、カウントは１
+    # Item に要素を一つ追加したら、カウントは１増加
     def test_item_is_not_empty(self):
         before_save_count = Item.objects.all().count()
         item = Item()
@@ -48,7 +75,7 @@ class StpModelTest(TestCase):
         items = Item.objects.all()
         self.assertEqual(items.count() - before_save_count, 1)
 
-    # Packet に要素を一つ追加したら、カウントは１
+    # Packet に要素を一つ追加したら、カウントは１増加
     def test_packet_is_not_empty(self):
         before_save_count = Packet.objects.all().count()
         packet = Packet()
@@ -56,11 +83,11 @@ class StpModelTest(TestCase):
         packets = Packet.objects.all()
         self.assertEqual(packets.count() - before_save_count, 1)
 
-    # Campaign に要素を一つ追加したら、カウントは１
+    # Campaign に要素を一つ追加したら、カウントは１増加
     def test_campaign_is_not_empty(self):
         before_save_count = Campaign.objects.all().count()
         campaign = Campaign()
-        campaign.sage()
+        campaign.save()
         campaigns = Campaign.objects.all()
         self.assertEqual(campaigns.count() - before_save_count, 1)
 

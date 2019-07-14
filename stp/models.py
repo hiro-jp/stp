@@ -19,9 +19,15 @@ def get_or_create_user():
 
 
 class Item(models.Model):
+    campaign = models.ForeignKey(
+        "Campaign",
+        on_delete=models.CASCADE,
+        related_name="item_set",
+        default=1,
+    )
     name = models.CharField(
         max_length=100,
-        null=True,
+        default="no name",
     )
 
 
@@ -59,4 +65,7 @@ class Packet(models.Model):
 
 
 class Campaign(models.Model):
-    pass
+    name = models.CharField(
+        max_length=100,
+        default="no name",
+    )

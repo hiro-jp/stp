@@ -11,8 +11,11 @@ from users.models import User
 # 以降、ログイン状態でテストしたい場合はこれを継承する
 class StpLoggedInTestCase(TestCase):
     fixtures = [
+        'stp/user_fixture',
+        'stp/order_fixture',
         'stp/campaign_fixture',
         'stp/item_fixture',
+        'stp/basket_item_fixture'
     ]
 
     def setUp(self):
@@ -71,8 +74,8 @@ class LoginAndLogoutTest(StpLoggedInTestCase):
 
 
 class StpIndexViewTest(StpLoggedInTestCase):
-    # index viewのcontextはcampaignのリストを持つ
-    def test_context_includes_compaign_set_as_context(self):
+    # index viewのcontextはすべてのcampaignのリストを持つ
+    def test_context_includes_compaign_set(self):
         response = self.client.get(reverse("index"))
         context_campaign_set = Campaign.objects.all().order_by("pk")
         self.assertQuerysetEqual(
@@ -90,16 +93,31 @@ class StpIndexViewTest(StpLoggedInTestCase):
             self.assertContains(response, c.name)
 
 
+class StpDetailViewTest(StpLoggedInTestCase):
+    # detail viewのcontextはitemの詳細を持つ
+    def test_context_includes_item_detail(self):
+        response = self.client.get(reverse("detail", kwargs={'pk': 1}))
+        context_item = Item.objects.get(pk=1)
+        self.assertEqual(
+            response.context["item"],
+            context_item,
+        )
+
+    def test_detail_view_shows_item_detail(self):
+        response = self.client.get(reverse("detail", kwargs={'pk': 1}))
+        i = Item.objects.get(pk=1)
+        self.assertTemplateUsed(response, "stp/detail_view.html")
+        self.assertContains(response, i.name)
+
+
 class StpModelTest(StpLoggedInTestCase):
     # BasketItem はいくつかの要素を持つ
     def test_basket_item_has_some_attributes(self):
-        basket_item = BasketItem()
-        basket_item.save()
-        first_basket_item = BasketItem.objects.first()
-        self.assertIsInstance(first_basket_item.order, Order)
-        self.assertIsInstance(first_basket_item.item, Item)
-        self.assertIsInstance(first_basket_item.nos, Number)
-        self.assertIsInstance(first_basket_item.user, User)
+        basket_item = BasketItem.objects.first()
+        self.assertIsInstance(basket_item.order, Order)
+        self.assertIsInstance(basket_item.item, Item)
+        self.assertIsInstance(basket_item.nos, Number)
+        self.assertIsInstance(basket_item.user, User)
 
     # Campaign はいくつかの要素を持つ
     def test_campaign_has_some_attributes(self):
@@ -114,3 +132,13 @@ class StpModelTest(StpLoggedInTestCase):
             Item.objects.filter(campaign=campaign).order_by("pk"),
             transform=lambda x: x,
         )
+
+    # Item はいくつかの要素を持つ
+    def test_item_model_has_some_attributes(self):
+        item = Item.objects.first()
+        self.assertIsInstance(item.name, str)
+        self.assertIsInstance(item.campaign, Campaign)
+        self.assertIsInstance(item.remarks, str)
+        self.assertIsInstance(item.incl, Number)
+        self.assertIsInstance(item.thresh_auto_app, Number)
+        self.assertIsInstance(item.thresh_stock_alert, Number)

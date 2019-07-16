@@ -29,6 +29,20 @@ class Item(models.Model):
         max_length=100,
         default="no name",
     )
+    remarks = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+    )
+    incl = models.IntegerField(
+        default=1,
+    )
+    thresh_auto_app = models.IntegerField(
+        default=0,
+    )
+    thresh_stock_alert = models.IntegerField(
+        default=0,
+    )
 
 
 class BasketItem(models.Model):

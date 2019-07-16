@@ -16,10 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from stp.views import IndexView
+from stp.views import IndexView, DetailView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', IndexView.as_view(), name='index'),
     path('accounts/', include('django.contrib.auth.urls')),
+    path('detail/<int:pk>', DetailView.as_view(), name="detail")
 ]

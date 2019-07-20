@@ -1,7 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 
-from stp.models import Campaign, Item
+from stp.models import Campaign
 
 
 class IndexView(LoginRequiredMixin, TemplateView):
@@ -18,5 +18,5 @@ class DetailView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
-        context["item"] = Item.objects.get(pk=kwargs["pk"])
+        context["campaign"] = Campaign.objects.get(pk=kwargs["pk"])
         return context

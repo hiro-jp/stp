@@ -1,7 +1,9 @@
 from numbers import Number
 
-from django.test import TestCase, Client
+from django.test import TestCase, Client, LiveServerTestCase
 from django.urls import reverse
+
+from selenium import webdriver
 
 from stp.models import BasketItem, Item, Order, Dealer, Packet, Campaign
 from users.models import User
@@ -18,26 +20,30 @@ class StpLoggedInTestCase(TestCase):
         'stp/basket_item_fixture'
     ]
 
-    def setUp(self):
-        self.testuser_username = "testuser_username"
-        self.testuser_password = "testuser_password"
-        self.testuser_email = "testuser@example.com"
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.testuser_username = "testuser_username"
+        cls.testuser_password = "testuser_password"
+        cls.testuser_email = "testuser@example.com"
 
-        self.testuser = User.objects.create_user(
-            username=self.testuser_username,
-            email=self.testuser_email,
+        cls.testuser = User.objects.create_user(
+            username=cls.testuser_username,
+            email=cls.testuser_email,
         )
-        self.testuser.set_password(self.testuser_password)
-        self.testuser.save()
+        cls.testuser.set_password(cls.testuser_password)
+        cls.testuser.save()
 
         # ログインしていない場合のURLとtemplateの対応
-        self.not_authenticated_correspondence = [
+        cls.not_authenticated_correspondence = [
             {'url': reverse("index"), 'template_name': 'registration/login.html'},
         ]
         # ログインしている場合のURLとtemplateの対応
-        self.authenticated_correspondence = [
+        cls.authenticated_correspondence = [
             {'url': reverse("index"), 'template_name': 'stp/index_view.html'},
         ]
+
+    def setUp(self):
         self.logged_in = self.client.login(
             username=self.testuser_username,
             password=self.testuser_password,
@@ -73,6 +79,42 @@ class LoginAndLogoutTest(StpLoggedInTestCase):
     # # → Django側ですでにテストされているので不要
 
 
+class SeleniumLoggedInTestCase(LiveServerTestCase):
+    fixtures = [
+        'stp/user_fixture',
+        'stp/order_fixture',
+        'stp/campaign_fixture',
+        'stp/item_fixture',
+        'stp/basket_item_fixture'
+    ]
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.testuser_username = "testuser_username"
+        cls.testuser_password = "testuser_password"
+        cls.browser = webdriver.Chrome()
+        cls.browser.get("http://127.0.0.1:8000/")
+        input_username = cls.browser.find_element_by_id('id_username')
+        input_username.send_keys(cls.testuser_username)
+        input_password = cls.browser.find_element_by_id('id_password')
+        input_password.send_keys(cls.testuser_password)
+        cls.browser.find_element_by_class_name("submit").click()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.browser.quit()
+        super().tearDownClass()
+
+
+class StpTemplateTest(SeleniumLoggedInTestCase):
+    def test_index_template_click_on_certain_link(self):
+        self.browser.get("http://127.0.0.1:8000/")
+        self.browser.find_element_by_id('stp_detail_1').click()
+        current_url = self.browser.current_url
+        self.assertEqual("http://127.0.0.1:8000/detail/1", current_url)
+
+
 class StpIndexViewTest(StpLoggedInTestCase):
     # index viewのcontextはすべてのcampaignのリストを持つ
     def test_context_includes_compaign_set(self):
@@ -94,18 +136,18 @@ class StpIndexViewTest(StpLoggedInTestCase):
 
 
 class StpDetailViewTest(StpLoggedInTestCase):
-    # detail viewのcontextはitemの詳細を持つ
+    # detail viewのcontextはCampaignの詳細を持つ
     def test_context_includes_item_detail(self):
         response = self.client.get(reverse("detail", kwargs={'pk': 1}))
-        context_item = Item.objects.get(pk=1)
+        context_campaign = Campaign.objects.get(pk=1)
         self.assertEqual(
-            response.context["item"],
-            context_item,
+            response.context["campaign"],
+            context_campaign,
         )
 
     def test_detail_view_shows_item_detail(self):
         response = self.client.get(reverse("detail", kwargs={'pk': 1}))
-        i = Item.objects.get(pk=1)
+        i = Campaign.objects.get(pk=1)
         self.assertTemplateUsed(response, "stp/detail_view.html")
         self.assertContains(response, i.name)
 

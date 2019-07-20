@@ -6,6 +6,7 @@ Hello world!
     <ul>
         {% for c in campaign_set %}
             <li>{{ c.name }}</li>
+            <li><a href="{% url 'detail' pk=1 %}" id="stp_detail_{{ c.id }}">detail</a></li>
         {% endfor %}
     </ul>
 

@@ -6,4 +6,8 @@
     {{ campaign.name }},
     {{ campaign.remarks }}
 
+    {% for item in item_set %}
+        {{ item.name }}
+    {% endfor %}
+
 {% endblock content %}

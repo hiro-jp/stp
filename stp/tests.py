@@ -137,19 +137,30 @@ class StpIndexViewTest(StpLoggedInTestCase):
 
 class StpDetailViewTest(StpLoggedInTestCase):
     # detail viewのcontextはCampaignの詳細を持つ
-    def test_context_includes_item_detail(self):
+    # detail viewのcontextはCampaignに紐づくitemのリストをもつ
+    def test_context_includes_campaign_and_item_detail(self):
         response = self.client.get(reverse("detail", kwargs={'pk': 1}))
         context_campaign = Campaign.objects.get(pk=1)
         self.assertEqual(
             response.context["campaign"],
             context_campaign,
         )
+        context_item_set = Item.objects.filter(campaign=context_campaign).order_by("id")
+        self.assertQuerysetEqual(
+            response.context['item_set'],
+            context_item_set,
+            transform=lambda x: x,
+        )
 
-    def test_detail_view_shows_item_detail(self):
+    # detail viewのtemplateはCampaignのdetailとitemのリストを持つ
+    def test_detail_view_shows_campaign_detail_and_item_list(self):
         response = self.client.get(reverse("detail", kwargs={'pk': 1}))
-        i = Campaign.objects.get(pk=1)
+        c = Campaign.objects.get(pk=1)
         self.assertTemplateUsed(response, "stp/detail_view.html")
-        self.assertContains(response, i.name)
+        self.assertContains(response, c.name)
+        i = Item.objects.filter(campaign=c)
+        for item in i:
+            self.assertContains(response, item.name)
 
 
 class StpModelTest(StpLoggedInTestCase):

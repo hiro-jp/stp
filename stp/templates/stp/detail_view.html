@@ -6,8 +6,13 @@
     {{ campaign.name }},
     {{ campaign.remarks }}
 
-    {% for item in item_set %}
-        {{ item.name }}
-    {% endfor %}
-
+    <form method="post" action="">
+        {% csrf_token %}
+        {% for item in item_set %}
+            <label for="form_item_{{ item.pk }}">item {{ item.pk }}: {{ item.name }}</label>
+            <input type="number" id="form_item_{{ item.pk }}" name="form_item_{{ item.pk }}" min="0">
+        {% endfor %}
+        <label for="submit_button">submit</label>
+        <input type="submit" id="submit" name="submit">
+    </form>
 {% endblock content %}

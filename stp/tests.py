@@ -1,9 +1,10 @@
 from numbers import Number
 
-from django.test import TestCase, Client, LiveServerTestCase
+from django.test import TestCase, Client, LiveServerTestCase, TransactionTestCase
 from django.urls import reverse
 
 from selenium import webdriver
+from selenium.webdriver.support.wait import WebDriverWait
 
 from stp.models import BasketItem, Item, Order, Dealer, Packet, Campaign
 from users.models import User
@@ -25,14 +26,14 @@ class StpLoggedInTestCase(TestCase):
         super().setUpClass()
         cls.testuser_username = "testuser_username"
         cls.testuser_password = "testuser_password"
-        cls.testuser_email = "testuser@example.com"
-
-        cls.testuser = User.objects.create_user(
-            username=cls.testuser_username,
-            email=cls.testuser_email,
-        )
-        cls.testuser.set_password(cls.testuser_password)
-        cls.testuser.save()
+        # cls.testuser_email = "testuser@example.com"
+        #
+        # cls.testuser = User.objects.create_user(
+        #     username=cls.testuser_username,
+        #     email=cls.testuser_email,
+        # )
+        # cls.testuser.set_password(cls.testuser_password)
+        # cls.testuser.save()
 
         # ログインしていない場合のURLとtemplateの対応
         cls.not_authenticated_correspondence = [
@@ -52,6 +53,7 @@ class StpLoggedInTestCase(TestCase):
 
 class LoginAndLogoutTest(StpLoggedInTestCase):
     def test_logged_in(self):
+        self.client.login(name=self.testuser_username, password=self.testuser_password)
         self.assertTrue(self.logged_in)
 
     # ログインしていないユーザーにはURLに対応するtemplateを返す
@@ -89,12 +91,12 @@ class SeleniumLoggedInTestCase(LiveServerTestCase):
     ]
 
     @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
+    def setUp(cls):
+        super().setUp(cls)
         cls.testuser_username = "testuser_username"
         cls.testuser_password = "testuser_password"
         cls.browser = webdriver.Chrome()
-        cls.browser.get("http://127.0.0.1:8000/")
+        cls.browser.get(cls.live_server_url)
         input_username = cls.browser.find_element_by_id('id_username')
         input_username.send_keys(cls.testuser_username)
         input_password = cls.browser.find_element_by_id('id_password')
@@ -102,17 +104,18 @@ class SeleniumLoggedInTestCase(LiveServerTestCase):
         cls.browser.find_element_by_class_name("submit").click()
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDown(cls):
         cls.browser.quit()
-        super().tearDownClass()
+        super().tearDown(cls)
 
 
 class StpTemplateTest(SeleniumLoggedInTestCase):
     def test_index_template_click_on_certain_link(self):
-        self.browser.get("http://127.0.0.1:8000/")
+        self.browser.get(self.live_server_url)
+        # self.browser.implicitly_wait(10)
         self.browser.find_element_by_id('stp_detail_1').click()
         current_url = self.browser.current_url
-        self.assertEqual("http://127.0.0.1:8000/detail/1", current_url)
+        self.assertEqual(self.live_server_url + "/detail/1", current_url)
 
 
 class StpIndexViewTest(StpLoggedInTestCase):
@@ -158,9 +161,23 @@ class StpDetailViewTest(StpLoggedInTestCase):
         c = Campaign.objects.get(pk=1)
         self.assertTemplateUsed(response, "stp/detail_view.html")
         self.assertContains(response, c.name)
-        i = Item.objects.filter(campaign=c)
-        for item in i:
+        item_set = Item.objects.filter(campaign=c)
+        for item in item_set:
             self.assertContains(response, item.name)
+
+
+class StpDetailTemplateTest(SeleniumLoggedInTestCase):
+    # detail template には、id = form_item_#(pk(item)) をもつ form がitemごとに存在する。
+    # submit ボタンを押すと、index にリダイレクトされる。
+    # 適切なkeyを含んだpostが飛ぶことのテストはできていない。
+    def test_detail_template_has_forms_for_every_items(self):
+        self.browser.get(self.live_server_url + "/detail/1")
+        item_set = Item.objects.filter(campaign=Campaign.objects.get(pk=1))
+        for item in item_set:
+            form = self.browser.find_element_by_id('form_item_' + str(item.pk))
+            form.send_keys('1')
+        self.browser.find_element_by_id('submit').click()
+        self.assertEqual(self.browser.current_url, self.live_server_url + "/")
 
 
 class StpModelTest(StpLoggedInTestCase):

@@ -49,7 +49,7 @@ class BasketItem(models.Model):
     item = models.ForeignKey(
         Item,
         on_delete=models.CASCADE,
-        default=get_or_create_item,
+        default=1,
     )
     nos = models.IntegerField(
         default=0,

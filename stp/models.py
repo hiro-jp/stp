@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator
 from django.db import models
 
 from users.models import User
@@ -53,6 +54,7 @@ class BasketItem(models.Model):
     )
     nos = models.IntegerField(
         default=0,
+        validators=[MinValueValidator(0)],
     )
     order = models.ForeignKey(
         "Order",

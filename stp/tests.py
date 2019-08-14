@@ -6,6 +6,7 @@ from django.urls import reverse
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
 
+from stp.forms import BasketItemForm
 from stp.models import BasketItem, Item, Order, Dealer, Packet, Campaign
 from users.models import User
 
@@ -14,11 +15,7 @@ from users.models import User
 # 以降、ログイン状態でテストしたい場合はこれを継承する
 class StpLoggedInTestCase(TestCase):
     fixtures = [
-        'stp/user_fixture',
-        'stp/order_fixture',
-        'stp/campaign_fixture',
-        'stp/item_fixture',
-        'stp/basket_item_fixture'
+        'initial_data'
     ]
 
     @classmethod
@@ -26,14 +23,6 @@ class StpLoggedInTestCase(TestCase):
         super().setUpClass()
         cls.testuser_username = "testuser_username"
         cls.testuser_password = "testuser_password"
-        # cls.testuser_email = "testuser@example.com"
-        #
-        # cls.testuser = User.objects.create_user(
-        #     username=cls.testuser_username,
-        #     email=cls.testuser_email,
-        # )
-        # cls.testuser.set_password(cls.testuser_password)
-        # cls.testuser.save()
 
         # ログインしていない場合のURLとtemplateの対応
         cls.not_authenticated_correspondence = [
@@ -83,11 +72,7 @@ class LoginAndLogoutTest(StpLoggedInTestCase):
 
 class SeleniumLoggedInTestCase(LiveServerTestCase):
     fixtures = [
-        'stp/user_fixture',
-        'stp/order_fixture',
-        'stp/campaign_fixture',
-        'stp/item_fixture',
-        'stp/basket_item_fixture'
+        'initial_data'
     ]
 
     @classmethod
@@ -166,6 +151,20 @@ class StpDetailViewTest(StpLoggedInTestCase):
             self.assertContains(response, item.name)
 
 
+class StpBasketItemFormTest(StpLoggedInTestCase):
+    def setUp(self):
+        self.item = Item.objects.get(pk=1)
+        self.user = User.objects.get(username=self.testuser_username)
+
+    def test_valid_data(self):
+        form = BasketItemForm({'nos': "1"})
+        self.assertTrue(form.is_valid())
+        saved_basket_item = form.save()
+        self.assertEqual(saved_basket_item.nos, 1)
+        self.assertEqual(saved_basket_item.user, self.user)
+        self.assertEqual(saved_basket_item.item, self.item)
+
+
 class StpDetailTemplateTest(SeleniumLoggedInTestCase):
     # detail template には、id = form_item_#(pk(item)) をもつ form がitemごとに存在する。
     # submit ボタンを押すと、index にリダイレクトされる。
@@ -174,7 +173,7 @@ class StpDetailTemplateTest(SeleniumLoggedInTestCase):
         self.browser.get(self.live_server_url + "/detail/1")
         item_set = Item.objects.filter(campaign=Campaign.objects.get(pk=1))
         for item in item_set:
-            form = self.browser.find_element_by_id('form_item_' + str(item.pk))
+            form = self.browser.find_element_by_id('id_form-' + str(item.pk - 1) + '-nos')
             form.send_keys('1')
         self.browser.find_element_by_id('submit').click()
         self.assertEqual(self.browser.current_url, self.live_server_url + "/")

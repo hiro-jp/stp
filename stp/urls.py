@@ -16,11 +16,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from stp.views import IndexView, DetailView
+from stp.views import IndexView, detail_view, edit_view, order_create_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', IndexView.as_view(), name='index'),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('detail/<int:pk>', DetailView.as_view(), name="detail")
+    path('detail/<int:pk>', detail_view, name="detail"),
+    path('edit/', edit_view, name="edit"),
+    path('order/', order_create_view, name="order"),
 ]

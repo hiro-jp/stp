@@ -59,7 +59,8 @@ class BasketItem(models.Model):
     order = models.ForeignKey(
         "Order",
         on_delete=models.CASCADE,
-        default=get_or_create_order,
+        null=True,
+        blank=True,
     )
     user = models.ForeignKey(
         User,
@@ -69,7 +70,29 @@ class BasketItem(models.Model):
 
 
 class Order(models.Model):
-    pass
+    order_user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+
+    address = models.TextField(
+        null=True,
+    )
+
+    tmc_approved = models.BooleanField(
+        default=False,
+    )
+
+    dispatched = models.BooleanField(
+        default=False,
+    )
+
+    tracking_number = models.CharField(
+        max_length=20,
+        null=True,
+    )
 
 
 class Dealer(models.Model):

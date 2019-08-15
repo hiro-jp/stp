@@ -5,14 +5,20 @@
 
 {% block content %}
 
-    {{ campaign.name }},
-    {{ campaign.remarks }}
+    {% if user.is_authenticated %}
+        {{ user.get_username }}
+    {% endif %}
+
+    {% if campaign %}
+        {{ campaign.name }}
+        {{ campaign.remarks }}
+    {% endif %}
 
     <form method="post" action="">
         {% csrf_token %}
-        {{ basket_item_form_set.management_form }}
+        {{ formset.management_form }}
 
-        {% for i, j in item_set|zip:basket_item_form_set %}
+        {% for i, j in item_set|zip:formset %}
             {{ i.name }}, {{ j }}<br />
         {% endfor %}
 

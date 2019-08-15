@@ -1,0 +1,9 @@
+{% for basket_item in basket_item_set %}
+    <p>{{ basket_item }}</p>
+{% endfor %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit">
+</form>

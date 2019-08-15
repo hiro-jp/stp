@@ -1,0 +1,7 @@
+{{ order.campaign.name }}<br />
+
+{% for basket_item in basket_item_set %}
+    {{ basket_item.item.name }}: {{ basket_item.nos }}<br />
+{% endfor %}
+
+tracking number: {{ order.tracking_number }}

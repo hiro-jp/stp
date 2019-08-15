@@ -16,7 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from stp.views import IndexView, detail_view, edit_view, order_create_view
+from stp.views import IndexView, detail_view, edit_view, order_create_view, OrderApproveListView, order_approve_view, \
+    order_dispatch_view, MyOrderDetailView, MyOrderListView, OrderDispatchListView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,5 +25,11 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('detail/<int:pk>', detail_view, name="detail"),
     path('edit/', edit_view, name="edit"),
-    path('order/', order_create_view, name="order"),
+    path('order/create/<int:pk>', order_create_view, name="order"),
+    path('approve/list/', OrderApproveListView.as_view(), name="approve_list"),
+    path('approve/<int:pk>', order_approve_view, name="approve"),
+    path('dispatch/<int:pk>', order_dispatch_view, name="dispatch"),
+    path('dispatch/list/', OrderDispatchListView.as_view(), name="dispatch_list"),
+    path('order/detail/<int:pk>', MyOrderDetailView.as_view(), name="order_detail"),
+    path('order/detail/list/', MyOrderListView.as_view(), name="order_list"),
 ]

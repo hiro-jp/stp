@@ -1,5 +1,7 @@
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import QuerySet
+from django.shortcuts import get_object_or_404
 
 from users.models import User
 
@@ -79,19 +81,29 @@ class Order(models.Model):
 
     address = models.TextField(
         null=True,
+        blank=True,
     )
 
-    tmc_approved = models.BooleanField(
+    is_approved = models.BooleanField(
         default=False,
     )
 
-    dispatched = models.BooleanField(
+    is_dispatched = models.BooleanField(
         default=False,
     )
-
     tracking_number = models.CharField(
         max_length=20,
         null=True,
+        blank=True,
+    )
+    campaign = models.ForeignKey(
+        'Campaign',
+        on_delete=models.CASCADE,
+        null=True,
+        default=None,
+    )
+    is_placed = models.BooleanField(
+        default=False,
     )
 
 
@@ -108,3 +120,16 @@ class Campaign(models.Model):
         max_length=100,
         default="no name",
     )
+    approver = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        default=User.objects.get(pk=1).id
+    )
+
+    def is_auto_approvable(self, basket_item_set: QuerySet):
+        result = True
+        for basket_item in basket_item_set:
+            item = Item.objects.get(basketitem=basket_item)
+            if item.thresh_auto_app < basket_item.nos:
+                result = result and False
+        return result

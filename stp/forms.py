@@ -21,10 +21,16 @@ class ItemForm(ModelForm):
         fields = {}
 
 
-class OrderForm(ModelForm):
+class OrderCreateForm(ModelForm):
     class Meta:
         model = Order
         fields = ['address']
+
+
+class OrderDispatchForm(ModelForm):
+    class Meta:
+        model = Order
+        fields = ['tracking_number']
 
 
 ItemInlineFormset = inlineformset_factory(Campaign, Item, form=ItemForm, extra=0)

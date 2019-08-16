@@ -22,9 +22,13 @@ class ItemForm(ModelForm):
 
 
 class OrderCreateForm(ModelForm):
+    apply_zip_address = forms.BooleanField(initial=False, required=False)
+    apply_telephone = forms.BooleanField(initial=False, required=False)
+    apply_recipient = forms.BooleanField(initial=False, required=False)
+
     class Meta:
         model = Order
-        fields = ['address']
+        fields = ['zip_code', 'address', 'telephone', 'recipient']
 
 
 class OrderDispatchForm(ModelForm):

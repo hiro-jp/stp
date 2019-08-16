@@ -10,6 +10,7 @@ from django.db import models
 
 # Create your models here.
 from accounts.models import UserManager
+from stp.models import Dealer
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -46,6 +47,13 @@ class User(AbstractBaseUser, PermissionsMixin):
             'Designates whether this user should be treated as active. '
             'Unselect this instead of deleting registration.'
         ),
+    )
+    dealer = models.ForeignKey(
+        Dealer,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        default=None,
     )
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
 

@@ -1,24 +1,40 @@
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import QuerySet
-from django.shortcuts import get_object_or_404
+
+
+class Dealer(models.Model):
+    name = models.CharField(
+        max_length=30,
+        default="no name",
+    )
+    abb_name = models.CharField(
+        max_length=10,
+        default="no abb_name",
+    )
+    dealer_code = models.CharField(
+        max_length=5,
+        default="00000",
+    )
+    zip_code = models.CharField(
+        max_length=7,
+        default="0000000",
+    )
+    address = models.CharField(
+        max_length=100,
+        default="no address",
+    )
+    telephone = models.CharField(
+        max_length=11,
+        default="00000000000",
+    )
+    recipient = models.CharField(
+        max_length=20,
+        default="no recipient",
+    )
+
 
 from users.models import User
-
-
-def get_or_create_item():
-    item, _ = Item.objects.get_or_create(name="null item")
-    return item.pk
-
-
-def get_or_create_order():
-    order, _ = Order.objects.get_or_create(pk=1)
-    return order.pk
-
-
-def get_or_create_user():
-    user, _ = User.objects.get_or_create(pk=1)
-    return user.pk
 
 
 class Item(models.Model):
@@ -67,7 +83,8 @@ class BasketItem(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        default=get_or_create_user,
+        null=True,
+        blank=True,
     )
 
 
@@ -78,12 +95,6 @@ class Order(models.Model):
         null=True,
         blank=True,
     )
-
-    address = models.TextField(
-        null=True,
-        blank=True,
-    )
-
     is_approved = models.BooleanField(
         default=False,
     )
@@ -105,14 +116,26 @@ class Order(models.Model):
     is_placed = models.BooleanField(
         default=False,
     )
-
-
-class Dealer(models.Model):
-    pass
-
-
-class Packet(models.Model):
-    pass
+    dealer_name = models.CharField(
+        max_length=30,
+        default="no name",
+    )
+    zip_code = models.CharField(
+        max_length=7,
+        default="0000000",
+    )
+    address = models.CharField(
+        max_length=100,
+        default="no address",
+    )
+    telephone = models.CharField(
+        max_length=11,
+        default="00000000000",
+    )
+    recipient = models.CharField(
+        max_length=20,
+        default="no recipient",
+    )
 
 
 class Campaign(models.Model):
@@ -123,7 +146,8 @@ class Campaign(models.Model):
     approver = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        default=User.objects.get(pk=1).id
+        null=True,
+        blank=True,
     )
 
     def is_auto_approvable(self, basket_item_set: QuerySet):

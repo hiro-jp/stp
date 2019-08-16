@@ -43,24 +43,43 @@ def order_create_view(request, pk):
         raise Http404
 
     order = Order.objects.get_or_create(order_user=request.user, campaign_id=pk, is_placed=False)[0]
-    form = OrderCreateForm(request.POST or None, instance=order)
+    dealer = request.user.dealer
+
+    # 宛先初期値に所属するDealerのものをコピー
+    order.dealer_name = dealer.name
+    order.zip_code = dealer.zip_code
+    order.address = dealer.address
+    order.telephone = dealer.telephone
+    order.recipient = dealer.recipient
+
+    order_form = OrderCreateForm(request.POST or None, instance=order)
     template = "stp/order_create_view.html"
 
-    if request.method == 'POST' and form.is_valid():
+    if request.method == 'POST' and order_form.is_valid():
         for basket_item in basket_item_set:
             basket_item.order = order
             basket_item.save()
 
-        instance = form.instance
+        order_form_instance = order_form.instance
+
         if order.campaign.is_auto_approvable(basket_item_set):
-            instance.is_approved = True
-        instance.is_placed = True
-        form.save()
+            order_form_instance.is_approved = True
+        order_form_instance.is_placed = True
+
+        if order_form.cleaned_data['apply_zip_address']:
+            dealer.address = order_form_instance.address
+        if order_form.cleaned_data['apply_telephone']:
+            dealer.telephone = order_form_instance.telephone
+        if order_form.cleaned_data['apply_recipient']:
+            dealer.recipient = order_form_instance.recipient
+
+        dealer.save()
+        order_form.save()
         return redirect('index')
 
     context = {
         "basket_item_set": basket_item_set,
-        "form": form,
+        "form": order_form,
     }
     return render(request, template_name=template, context=context)
 

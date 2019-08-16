@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.admin import ModelAdmin
 
-from stp.models import Campaign, BasketItem, Item, Order
+from stp.models import Campaign, BasketItem, Item, Order, Dealer
 
 
 @admin.register(Campaign)
@@ -23,4 +23,8 @@ class BasketItemAdmin(ModelAdmin):
 class OrderAdmin(ModelAdmin):
     pass
 
+
+@admin.register(Dealer)
+class DealerAdmin(ModelAdmin):
+    pass
 

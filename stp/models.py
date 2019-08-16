@@ -62,6 +62,9 @@ class Item(models.Model):
     thresh_stock_alert = models.IntegerField(
         default=0,
     )
+    stock = models.IntegerField(
+        default=0,
+    )
 
 
 class BasketItem(models.Model):
@@ -105,7 +108,7 @@ class Order(models.Model):
     tracking_number = models.CharField(
         max_length=20,
         null=True,
-        blank=True,
+        blank=False,
     )
     campaign = models.ForeignKey(
         'Campaign',
@@ -135,6 +138,21 @@ class Order(models.Model):
     recipient = models.CharField(
         max_length=20,
         default="no recipient",
+    )
+    date_placed = models.DateTimeField(
+        null=True,
+        blank=True,
+        default=None,
+    )
+    date_approved = models.DateTimeField(
+        null=True,
+        blank=True,
+        default=None,
+    )
+    date_dispatched = models.DateTimeField(
+        null=True,
+        blank=True,
+        default=None,
     )
 
 

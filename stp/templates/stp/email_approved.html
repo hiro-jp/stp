@@ -1,0 +1,36 @@
+ナンデモ発送株式会社 御中
+
+下記オーダーを受領しましたので、発送作業をお願いいたします。
+
+オーダー情報は下記よりご指定のフォーマットでダウンロードできます。
+http://www.〜〜〜
+
+発送が完了しましたら、お手数ですが下記より完了入力をお願いいたします。
+http://www.〜〜〜
+
+ーーーーーーーーーーーーーーーーーーーーーーー
+キャンペーン名：{{ order.campaign.name }}
+
+注文内容：
+{% for basket_item in basket_item_set %}　・{{ basket_item.item.name }}：{{ basket_item.nos }}個（在庫：{{ basket_item.item.stock }}個）
+{% endfor %}
+宛先：
+　〒{{ order.zip_code }}
+　{{ order.address }}
+　{{ order.dealer_name }} 御中
+
+受取人様：
+　{{ order.recipient }} 様
+ーーーーーーーーーーーーーーーーーーーーーーー
+
+以上、よろしくお願いいたします。
+
+＜＜　本メールアドレスは送信専用です　＞＞
+＜＜お問い合わせは下記までお願いします＞＞
+
+お問い合わせ先
+　ABCDEF株式会社
+　営業部法人営業課
+　鈴木次郎
+　03-****-****
+　abcdef@example.com

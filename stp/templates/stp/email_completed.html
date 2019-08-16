@@ -1,0 +1,25 @@
+{{ order.campaign.approver }} 殿
+
+STP受発注システム自動送信メールです。
+下記発注の発送が完了しましたのでご連絡いたします。
+
+ーーーーーーーーーーーーーーーーーーーーーーー
+キャンペーン名：{{ order.campaign.name }}
+
+注文内容：
+{% for basket_item in basket_item_set %}　・{{ basket_item.item.name }}：{{ basket_item.nos }}個（在庫：{{ basket_item.item.stock }}個）
+{% endfor %}
+宛先：
+　〒{{ order.zip_code }}
+　{{ order.address }}
+　{{ order.dealer_name }} 御中
+
+受取人様：
+　{{ order.recipient }} 様
+
+追跡番号：
+　{{ order.trackingtracking_number }}
+ーーーーーーーーーーーーーーーーーーーーーーー
+
+！自動承認設定は定期的に見直して下さい！
+自動承認設定は、STP受発注システムのアイテム設定画面から変更できます。

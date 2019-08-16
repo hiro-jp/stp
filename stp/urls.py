@@ -31,5 +31,6 @@ urlpatterns = [
     path('dispatch/<int:pk>', order_dispatch_view, name="dispatch"),
     path('dispatch/list/', OrderDispatchListView.as_view(), name="dispatch_list"),
     path('order/detail/<int:pk>', MyOrderDetailView.as_view(), name="order_detail"),
-    path('order/detail/list/', MyOrderListView.as_view(), name="order_list"),
+    path('order/list/', MyOrderListView.as_view(), name="order_list"),
+    path('excel_order_sheet/', include('excel_order_sheet.urls')),
 ]

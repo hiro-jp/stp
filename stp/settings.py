@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'stp',
     'users',
     'accounts',
+    'excel_order_sheet',
 ]
 
 MIDDLEWARE = [
@@ -127,3 +128,10 @@ STATIC_URL = '/static/'
 AUTH_USER_MODEL = "users.User"
 
 LOGIN_REDIRECT_URL = '/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.mail.yahoo.co.jp'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'teitoku_2ch@yahoo.co.jp'
+EMAIL_HOST_PASSWORD = 'jn3hwl'
+EMAIL_USE_TLS = False

@@ -4,6 +4,8 @@
 
 {{ order.address }}
 
+<a href="{% url 'excel_order_sheet:excel_order_sheet' pk=order.pk %}">ダウンロード</a>
+
 <form method="post">
     {% csrf_token %}
     {{ form }}

@@ -1,0 +1,9 @@
+{% if user.is_authenticated %}
+    <div class="row">
+    {% if user.dealer %}
+        {{ user.dealer.name }} 殿
+    {% else %}
+            {{ user.username }} 殿
+    {% endif %}
+    </div>
+{% endif %}

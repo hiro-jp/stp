@@ -1,9 +1,19 @@
-{% for basket_item in basket_item_set %}
-    <p>{{ basket_item.item.name }}: {{ basket_item.nos }}</p>
-{% endfor %}
+{% extends "base.html" %}
+{% block content %}
+    {% include "stp/head_user.html" %}
+    {% include "stp/head_campaign.html" %}
 
+{% include "stp/item_list.html" %}
+
+<hr>
+
+<h5>宛先入力</h5>
 <form method="post">
     {% csrf_token %}
-    {{ form }}
-    <input type="submit">
+
+    {% include "stp/addres_list.html" %}
+
+    <input type="submit" class="btn btn-primary" value="注文">
 </form>
+
+{% endblock %}

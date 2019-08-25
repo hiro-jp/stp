@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+    {% include "stp/head_user.html" %}
+    {% include "stp/head_campaign.html" %}
+
+    <form method="post">
+        {% csrf_token %}
+        {{ formset.management_form }}
+
+        {% include "stp/item_list.html" %}
+
+        <label for="submit_button">submit</label>
+        <input type="submit" id="submit" name="submit_button">
+    </form>
+
+{% endblock content %}

@@ -1,13 +1,22 @@
-{% for basket_item in basket_item_set %}
-    {{ basket_item.item.name }}: {{ basket_item.nos }}<br/>
-{% endfor %}
+{% extends "base.html" %}
+{% block content %}
 
-{{ order.address }}
+{% include "stp/item_list.html" %}
+{% include "stp/addres_list.html" %}
 
-<a href="{% url 'excel_order_sheet:excel_order_sheet' pk=order.pk %}">ダウンロード</a>
-
+<hr>
+<button class="btn btn-info mx-auto d-block" onclick="location.href='{% url 'excel_order_sheet:excel_order_sheet' pk=order.pk %}'">発送用ファイルをダウンロード</button>
+<hr>
 <form method="post">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit">
+{% csrf_token %}
+<table class="table">
+    <tr>
+        <td width="30%">{{ form.tracking_number.label }}</td>
+        <td width="30%">{{ form.tracking_number }}</td>
+        <td width="40%"><button class="btn btn-primary mx-auto d-block" type="submit">発送完了登録</button></td>
+    </tr>
+</table>
+<hr>
 </form>
+
+{% endblock %}

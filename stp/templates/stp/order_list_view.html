@@ -1,3 +1,43 @@
-{% for order in order_list %}
-    {{ order }}<br />
-{% endfor %}
+{% extends "base.html" %}
+
+{% block content %}
+<h5>注文一覧</h5>
+<table class="table table-bordered" width="100%">
+<thead class="thead-light">
+<tr>
+    <th>キャンペーン名</th>
+    <th>受取人</th>
+    <th>注文日</th>
+    <th>発送日</th>
+    <th>操作</th>
+</tr>
+</thead>
+<tbody>
+{% if order_list %}
+    {% for order in order_list %}
+    <tr>
+        <td>{{ order.campaign.name }}</td>
+        <td>{{ order.recipient }}</td>
+        <td>{{ order.date_placed.date.isoformat }}<br />{{ order.date_placed.time }}</td>
+        {% if order.date_dispatched %}
+            <td>{{ order.date_dispatched.date.isoformat }}<br />{{ order.date_dispatched.time }}</td>
+        {% else %}
+            <td>未発送</td>
+        {% endif %}
+        {% if is_dispatch_list %}
+            <td><button class="btn btn-primary" onclick="location.href='{% url 'order_dispatch_detail' pk=order.pk %}'">発送</button></td>
+        {% elif is_order_list %}
+            <td><button class="btn btn-primary" onclick="location.href='{% url 'order_detail' pk=order.pk %}'">詳細</button></td>
+        {% elif is_approve_list %}
+            <td><button class="btn btn-primary" onclick="location.href='{% url 'order_approve_detail' pk=order.pk %}'">承認画面</button></td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+{% else %}
+    <tr><td colspan="5" align="center">表示する注文はありません</td></tr>
+{% endif %}
+
+</tbody>
+</table>
+
+{% endblock %}

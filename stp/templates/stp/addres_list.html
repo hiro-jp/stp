@@ -1,0 +1,66 @@
+{% load stp_extras %}
+<table class="table" width="100%">
+<thead class="thead-light"></thead>
+    {% if is_order_create %}
+    <tr>
+        <td>会社名</td>
+        <td>{{ user.dealer.name }} 御中</td>
+        <td></td>
+        <td></td>
+    </tr>
+
+    <tr>
+        <td>{{ form.zip_code.label }}<br /><small>{{ form.zip_code.help_text }}</small></td>
+        <td>{{ form.zip_code }}</td>
+        <td class="align-middle">{{ form.apply_zip_address }}</td>
+        <td class="align-middle">{{ form.apply_zip_address.label }}</td>
+    </tr>
+    <tr>
+        <td>{{ form.address.label }}</td>
+        <td colspan="3">{{ form.address }}</td>
+    </tr>
+    <tr>
+        <td>{{ form.recipient.label }}</td>
+        <td>{{ form.recipient }} 様</td>
+        <td>{{ form.apply_recipient }}</td>
+        <td>{{ form.apply_recipient.label }}</td>
+    </tr>
+    <tr>
+        <td>{{ form.telephone.label }}</td>
+        <td>{{ form.telephone }}</td>
+        <td>{{ form.apply_telephone }}</td>
+        <td>{{ form.apply_telephone.label }}</td>
+    </tr>
+    {% endif %}
+
+    {% if is_dispatch or is_approve or is_detail%}
+        <tr>
+            <td>会社名</td>
+            <td>{{ user.dealer.name }} 御中</td>
+        </tr>
+
+        <tr>
+            <td>{{ order|verbose_name_filter:"zip_code" }}</td>
+            <td>{{ order.zip_code }}</td>
+        </tr>
+        <tr>
+            <td>{{ order|verbose_name_filter:"address" }}</td>
+            <td>{{ order.address }}</td>
+        </tr>
+        <tr>
+            <td>{{ order|verbose_name_filter:"recipient" }}</td>
+            <td>{{ order.recipient }} 様</td>
+        </tr>
+        <tr>
+            <td>{{ order|verbose_name_filter:"telephone" }}</td>
+            <td>{{ order.telephone }}</td>
+        </tr>
+        {% if is_detail %}
+        <tr>
+            <td>{{ order|verbose_name_filter:"tracking_number" }}</td>
+            <td>{{ order.tracking_number }}</td>
+        </tr>
+        {% endif %}
+    {% endif %}
+
+</table>

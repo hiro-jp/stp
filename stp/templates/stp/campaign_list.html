@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <table class="table">
+        {% for c in campaign_set %}
+        <tr>
+            <td>{{ c.name }}</td>
+            <td><a href="{% url 'campaign_detail' pk=c.id %}" id="stp_detail_{{ c.id }}">detail</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+
+{% endblock content %}

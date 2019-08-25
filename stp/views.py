@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
 from django.db.models import QuerySet
-from django.http import Http404
+from django.http import Http404, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -12,32 +12,16 @@ from stp.models import Campaign, Item, BasketItem, Order
 
 
 class IndexView(LoginRequiredMixin, TemplateView):
-    template_name = 'stp/index_view.html'
+    template_name = "stp/index.html"
+
+
+class CampaignListView(LoginRequiredMixin, TemplateView):
+    template_name = 'stp/campaign_list.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
         context["campaign_set"] = Campaign.objects.all().order_by("pk")
         return context
-
-
-@login_required
-def edit_view(request):
-    template = "stp/detail_view.html"
-
-    basket_item_set = BasketItem.objects.filter(user=request.user)
-    item_set = Item.objects.filter(basketitem__user=request.user)
-    formset = BasketItemModelFormset(request.POST or None, queryset=basket_item_set)
-
-    if request.method == 'POST' and formset.is_valid():
-        formset.save()
-        return redirect('edit')
-
-    context = {
-        'formset': formset,
-        'item_set': item_set,
-        # 'campaign': campaign,
-    }
-    return render(request, template_name=template, context=context)
 
 
 def email_order_placed(request, order: Order, basket_item_set: QuerySet):
@@ -70,7 +54,7 @@ def email_auto_approval(request, order: Order, basket_item_set: QuerySet):
     send_mail(subject, message, from_email, recipient_email)
 
 
-# 設計上は approved だが、事実上は業者にオーダー到着を連絡するメール
+# 設計上は approved だが、事実上は発送業者にオーダー到着を連絡するメール
 def email_approved(request, order: Order, basket_item_set: QuerySet):
     subject = "オーダー到着通知"
     template = "stp/email_approved.html"
@@ -122,7 +106,10 @@ def order_create_view(request, pk):
     if basket_item_set.count() == 0:
         raise Http404
 
-    order = Order.objects.get_or_create(order_user=request.user, campaign_id=pk, is_placed=False)[0]
+    item_set = Item.objects.filter(basketitem__in=basket_item_set)
+
+    campaign = get_object_or_404(Campaign, pk=pk)
+    order = Order.objects.get_or_create(order_user=request.user, campaign=campaign, is_placed=False)[0]
     dealer = request.user.dealer
 
     # 宛先初期値に所属するDealerのものをコピー
@@ -168,6 +155,9 @@ def order_create_view(request, pk):
     context = {
         "basket_item_set": basket_item_set,
         "form": order_form,
+        "item_set": item_set,
+        "campaign": campaign,
+        "is_order_create": True,
     }
     return render(request, template_name=template, context=context)
 
@@ -180,28 +170,37 @@ class OrderApproveListView(LoginRequiredMixin, ListView):
         queryset = Order.objects.filter(campaign__approver=self.request.user).filter(is_approved=False)
         return queryset
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data()
+        context['is_approve_list'] = True
+        return context
+
 
 @login_required
 def order_approve_view(request, pk):
     template = "stp/order_approve_view.html"
     order = get_object_or_404(Order, pk=pk)
     basket_item_set = BasketItem.objects.filter(order=order)
+    item_set = Item.objects.filter(basketitem__in=basket_item_set)
 
     if request.method == 'POST':
         order.is_approved = True
         order.date_approved = timezone.datetime.now()
         email_approved(request, order, basket_item_set)
         order.save()
-        return redirect('approve_list')
+        return redirect('order_approve_list')
 
     context = {
-        "order": order
+        "order": order,
+        "is_approve": True,
+        "basket_item_set": basket_item_set,
+        "item_set": item_set
     }
 
     return render(request, template_name=template, context=context)
 
 
-class MyOrderListView(LoginRequiredMixin, ListView):
+class OrderListView(LoginRequiredMixin, ListView):
     model = Order
     template_name = "stp/order_list_view.html"
 
@@ -209,14 +208,22 @@ class MyOrderListView(LoginRequiredMixin, ListView):
         queryset = Order.objects.filter(order_user=self.request.user)
         return queryset
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data()
+        context['is_order_list'] = True
+        return context
 
-class MyOrderDetailView(LoginRequiredMixin, DetailView):
+
+class OrderDetailView(LoginRequiredMixin, DetailView):
     model = Order
     template_name = "stp/order_detail_view.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
         context['basket_item_set'] = BasketItem.objects.filter(order=self.get_object())
+        item_set = Item.objects.filter(basketitem__in=context['basket_item_set'])
+        context["item_set"] = item_set
+        context['is_detail'] = True
         return context
 
 
@@ -228,15 +235,21 @@ class OrderDispatchListView(ListView):
         queryset = Order.objects.filter(is_approved=True, is_dispatched=False)
         return queryset
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data()
+        context['is_dispatch_list'] = True
+        return context
+
 
 @login_required
 def order_dispatch_view(request, pk):
     template = "stp/order_dispatch_view.html"
     order = get_object_or_404(Order, pk=pk)
     basket_item_set = BasketItem.objects.filter(order=order)
+    item_set = Item.objects.filter(basketitem__in=basket_item_set)
 
     if order.is_dispatched:
-        return Http404
+        return HttpResponseNotFound()
 
     form = OrderDispatchForm(request.POST or None, instance=order)
 
@@ -252,19 +265,21 @@ def order_dispatch_view(request, pk):
         order_form_instance.is_dispatched = True
         order_form_instance.date_dispatched = timezone.datetime.now()
         form.save()
-        return redirect('dispatch_list')
+        return redirect('order_dispatch_list')
 
     context = {
         'form': form,
         'basket_item_set': basket_item_set,
         'order': order,
+        'item_set': item_set,
+        'is_dispatch': True,
     }
     return render(request, template, context)
 
 
 @login_required
-def detail_view(request, pk):
-    template = "stp/detail_view.html"
+def campaign_detail_view(request, pk):
+    template = "stp/campaign_detail.html"
     campaign = get_object_or_404(Campaign, pk=pk)
     formset = ItemInlineFormset(request.POST or None, instance=campaign)
     # ↓ 便利！
@@ -282,7 +297,7 @@ def detail_view(request, pk):
                 basket_item.nos = formset.cleaned_data[count]["nos"]
                 basket_item.save()
 
-        return redirect('order', pk=campaign.id)
+        return redirect('order_create', pk=campaign.id)
 
     context = {
         'formset': formset,
@@ -290,4 +305,3 @@ def detail_view(request, pk):
         'campaign': campaign,
     }
     return render(request, template_name=template, context=context)
-

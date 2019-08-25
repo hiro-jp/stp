@@ -1,0 +1,51 @@
+{% load stp_extras %}
+<h5>注文明細</h5>
+<table class="table table-bordered" width="100%">
+<thead class="thead-light">
+<tr>
+    <th width="30%" class="align-middle text-center">品名</th>
+    <th width="30%" class="align-middle text-center">参考画像</th>
+    {% if basket_item_set %}
+        {% if user.is_authenticated %}
+            <th width="20%" class="align-middle text-center">注文数</th>
+            <th width="20%" class="align-middle text-center">在庫数</th>
+        {% else %}
+            <th width="40%" class="align-middle text-center">注文数</th>
+        {% endif %}
+    {% else %}
+        <th width="40%" class="align-middle text-center">注文数</th>
+    {% endif %}
+</tr>
+</thead>
+<tbody>
+    {% if formset %}
+        {% for item, form in item_set|zip:formset %}
+            <tr>
+                <td class="align-middle text-center">{{ item.name }}</td>
+                <td class="align-middle text-center"><img src="{{ item.image.url }}" width="100" height="100"></td>
+
+                <td class="align-middle text-center">{{ form.nos }}</td>
+                {% for hidden_field in form.hidden_fields %}
+                    {{ hidden_field.errors }}
+                    {{ hidden_field }}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    {% endif %}
+
+    {% if basket_item_set %}
+        {% for item, basket_item in item_set|zip:basket_item_set %}
+            <tr>
+                <td class="align-middle text-center">{{ item.name }}</td>
+                <td class="align-middle text-center"><img src="{{ item.image.url }}" width="100" height="100"></td>
+
+                <td class="align-middle text-center">{{ basket_item.nos }}</td>
+                {% if user.is_superuser %}
+                    <td class="align-middle text-center">{{ item.stock }}</td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    {% endif %}
+</tbody>
+</table>
+

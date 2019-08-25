@@ -22,13 +22,29 @@ class ItemForm(ModelForm):
 
 
 class OrderCreateForm(ModelForm):
-    apply_zip_address = forms.BooleanField(initial=False, required=False)
-    apply_telephone = forms.BooleanField(initial=False, required=False)
-    apply_recipient = forms.BooleanField(initial=False, required=False)
+    apply_zip_address = forms.BooleanField(
+        initial=False,
+        required=False,
+        label="この郵便番号と住所を標準に設定する"
+    )
+    apply_telephone = forms.BooleanField(
+        initial=False,
+        required=False,
+        label="この電話番号を標準に設定する"
+    )
+    apply_recipient = forms.BooleanField(
+        initial=False,
+        required=False,
+        label="この受取人を標準に設定する"
+    )
 
     class Meta:
         model = Order
         fields = ['zip_code', 'address', 'telephone', 'recipient']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['address'].widget.attrs['style'] = 'width:100%;'
 
 
 class OrderDispatchForm(ModelForm):

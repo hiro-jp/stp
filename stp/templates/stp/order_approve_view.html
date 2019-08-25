@@ -1,6 +1,12 @@
-{{ order }}
+{% extends "base.html" %}
+{% block content %}
+
+{% include "stp/item_list.html" %}
+{% include "stp/addres_list.html" %}
 
 <form method="post">
     {% csrf_token %}
-    <input type="submit">
+    <input type="submit" class="btn btn-primary" value="承認">
 </form>
+
+{% endblock %}

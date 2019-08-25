@@ -30,7 +30,7 @@ class StpLoggedInTestCase(TestCase):
         ]
         # ログインしている場合のURLとtemplateの対応
         cls.authenticated_correspondence = [
-            {'url': reverse("index"), 'template_name': 'stp/index_view.html'},
+            {'url': reverse("index"), 'template_name': 'stp/campaign_list.html'},
         ]
 
     def setUp(self):
@@ -118,7 +118,7 @@ class StpIndexViewTest(StpLoggedInTestCase):
     def test_index_view_shows_list_of_campaign(self):
         response = self.client.get(reverse("index"))
         # 正しいtemplateを使う
-        self.assertTemplateUsed(response, "stp/index_view.html")
+        self.assertTemplateUsed(response, "stp/campaign_list.html")
         for c in Campaign.objects.all():
             self.assertContains(response, c.name)
 
@@ -144,7 +144,7 @@ class StpDetailViewTest(StpLoggedInTestCase):
     def test_detail_view_shows_campaign_detail_and_item_list(self):
         response = self.client.get(reverse("detail", kwargs={'pk': 1}))
         c = Campaign.objects.get(pk=1)
-        self.assertTemplateUsed(response, "stp/detail_view.html")
+        self.assertTemplateUsed(response, "stp/campaign_detail.html")
         self.assertContains(response, c.name)
         item_set = Item.objects.filter(campaign=c)
         for item in item_set:

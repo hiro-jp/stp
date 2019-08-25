@@ -47,6 +47,7 @@ class Item(models.Model):
     name = models.CharField(
         max_length=100,
         default="no name",
+        verbose_name="品名",
     )
     remarks = models.CharField(
         max_length=255,
@@ -64,6 +65,12 @@ class Item(models.Model):
     )
     stock = models.IntegerField(
         default=0,
+    )
+    image = models.ImageField(
+        upload_to='uploads/%Y/%m/%d',
+        verbose_name='参考画像',
+        null=True,
+        blank=True,
     )
 
 
@@ -109,6 +116,7 @@ class Order(models.Model):
         max_length=20,
         null=True,
         blank=False,
+        verbose_name="伝票番号"
     )
     campaign = models.ForeignKey(
         'Campaign',
@@ -126,18 +134,23 @@ class Order(models.Model):
     zip_code = models.CharField(
         max_length=7,
         default="0000000",
+        verbose_name="郵便番号",
+        help_text="※ハイフン不要",
     )
     address = models.CharField(
         max_length=100,
         default="no address",
+        verbose_name="住所",
     )
     telephone = models.CharField(
         max_length=11,
         default="00000000000",
+        verbose_name="電話番号",
     )
     recipient = models.CharField(
         max_length=20,
         default="no recipient",
+        verbose_name="受取人",
     )
     date_placed = models.DateTimeField(
         null=True,

@@ -1,0 +1,9 @@
+{% if campaign %}
+    <div class="row">
+        キャンペーン名：{{ campaign.name }}
+    </div>
+{% elif order %}
+    <div class="row">
+        キャンペーン名：{{ order.campaign.name }}
+    </div>
+{% endif %}

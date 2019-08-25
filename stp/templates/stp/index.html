@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <a href="{% url 'campaign_list' %}">キャンペーン</a><br />
+    <a href="{% url 'order_approve_list' %}">承認依頼</a><br />
+    <a href="{% url 'order_dispatch_list' %}">発送依頼</a><br />
+    <a href="{% url 'order_list' %}">オーダー</a><br />
+{% endblock %}

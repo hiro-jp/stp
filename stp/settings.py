@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'users',
     'accounts',
     'excel_order_sheet',
+    'bootstrap4',
 ]
 
 MIDDLEWARE = [
@@ -68,6 +69,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+            ],
+            'builtins':[
+                'bootstrap4.templatetags.bootstrap4',
             ],
         },
     },
@@ -135,3 +139,6 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'teitoku_2ch@yahoo.co.jp'
 EMAIL_HOST_PASSWORD = 'jn3hwl'
 EMAIL_USE_TLS = False
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'

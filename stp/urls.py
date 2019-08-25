@@ -13,24 +13,36 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
+from django.contrib.staticfiles.urls import static, staticfiles_urlpatterns
 from django.urls import path, include
 
-from stp.views import IndexView, detail_view, edit_view, order_create_view, OrderApproveListView, order_approve_view, \
-    order_dispatch_view, MyOrderDetailView, MyOrderListView, OrderDispatchListView
+from stp import settings
+from stp.views import CampaignListView, campaign_detail_view, order_create_view, OrderApproveListView, order_approve_view, \
+    order_dispatch_view, OrderDetailView, OrderListView, OrderDispatchListView, IndexView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', IndexView.as_view(), name='index'),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('detail/<int:pk>', detail_view, name="detail"),
-    path('edit/', edit_view, name="edit"),
-    path('order/create/<int:pk>', order_create_view, name="order"),
-    path('approve/list/', OrderApproveListView.as_view(), name="approve_list"),
-    path('approve/<int:pk>', order_approve_view, name="approve"),
-    path('dispatch/<int:pk>', order_dispatch_view, name="dispatch"),
-    path('dispatch/list/', OrderDispatchListView.as_view(), name="dispatch_list"),
-    path('order/detail/<int:pk>', MyOrderDetailView.as_view(), name="order_detail"),
-    path('order/list/', MyOrderListView.as_view(), name="order_list"),
+
+    path('', IndexView.as_view(), name="index"),
+
+    path('campaign/', CampaignListView.as_view(), name='campaign_list'),
+    path('campaign/<int:pk>', campaign_detail_view, name="campaign_detail"),
+
+    path('order/approve/', OrderApproveListView.as_view(), name="order_approve_list"),
+    path('order/approve/<int:pk>', order_approve_view, name="order_approve_detail"),
+
+    path('order/dispatch/', OrderDispatchListView.as_view(), name="order_dispatch_list"),
+    path('order/dispatch/<int:pk>', order_dispatch_view, name="order_dispatch_detail"),
+
+    path('order/', OrderListView.as_view(), name="order_list"),
+    path('order/<int:pk>', OrderDetailView.as_view(), name="order_detail"),
+    path('order/create/<int:pk>', order_create_view, name="order_create"),
+
     path('excel_order_sheet/', include('excel_order_sheet.urls')),
 ]
+
+urlpatterns += staticfiles_urlpatterns()
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
